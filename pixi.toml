@@ -1,0 +1,19 @@
+[project]
+name = "cua-driver-http"
+version = "0.1.0"
+description = "Cua Driver stdio-to-HTTP MCP bridge"
+channels = ["conda-forge"]
+platforms = ["win-64", "osx-arm64", "linux-64"]
+
+[dependencies]
+nodejs = ">=20"
+
+[tasks]
+# Generate .env with a random API key if missing
+gen-env = "node -e \"const fs = require('fs'), crypto = require('crypto'); if (!fs.existsSync('.env')) { fs.writeFileSync('.env', 'SUPERGATEWAY_API_KEY=' + crypto.randomBytes(32).toString('hex') + '\\n'); console.log('.env created'); }\""
+
+# Start daemon
+daemon = "cua-driver serve"
+
+# Single-command start with CORS configured for your web UI origin
+start = { cmd = "npx -y supergateway --stdio \"cua-driver mcp\" --outputTransport streamableHttp --streamableHttpPath /mcp --stateful --cors \"http://127.0.0.1:9931\" --host 0.0.0.0 --port 8080", depends-on = ["gen-env"] }
